@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Records - Smart Clinic</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">Hospital CMS</a>
+            <nav class="nav-menu">
+                <a href="/doctor/home" class="nav-link">Home</a>
+                <a href="/doctor/appointments" class="nav-link">Appointments</a>
+                <a href="/logout" class="nav-link">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="card fade-in">
+            <h1 class="form-title">Patient <span class="highlight">Records</span></h1>
+            
+            <div class="search-filter">
+                <input type="text" class="form-input search-input" placeholder="Search patient records..." id="recordSearch">
+                <select class="form-select filter-select" id="dateFilter">
+                    <option value="">All Dates</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                </select>
+            </div>
+
+            <div class="data-table" id="recordsTable">
+                <div class="table-header">
+                    <div class="table-row">
+                        <div><strong>Date</strong></div>
+                        <div><strong>Appointment ID</strong></div>
+                        <div><strong>Patient ID</strong></div>
+                        <div><strong>Patient Name</strong></div>
+                        <div><strong>Prescription</strong></div>
+                        <div><strong>Actions</strong></div>
+                    </div>
+                </div>
+                <div id="recordsBody">
+                    <!-- Records will be populated here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Prescription Modal -->
+    <div id="prescriptionModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closePrescriptionModal()">&times;</span>
+            <h2 class="form-title">View <span class="highlight">Prescription</span></h2>
+            
+            <div class="form-group">
+                <label class="form-label">Patient Name</label>
+                <input type="text" id="modalPatientName" class="form-input" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Medicine Names</label>
+                <textarea id="modalMedicineNames" class="form-textarea" readonly></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Dosage Instructions</label>
+                <textarea id="modalDosageInstructions" class="form-textarea" readonly></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Additional Notes</label>
+                <textarea id="modalNotes" class="form-textarea" readonly></textarea>
+            </div>
+            
+            <button type="button" class="form-btn secondary" onclick="closePrescriptionModal()">Close</button>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Company</h3>
+                <ul>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Support</h3>
+                <ul>
+                    <li><a href="#account">Account</a></li>
+                    <li><a href="#help">Help Center</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#terms">Terms & Conditions</a></li>
+                    <li><a href="#privacy">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <script>
+        // Sample patient records data
+        const patientRecords = [
+            {
+                id: 1,
+                date: "2025-05-23",
+                appointmentId: 131,
+                patientId: 26,
+                patientName: "Alice Johnson",
+                prescription: {
+                    medicines: "Lisinopril 10mg, Metformin 500mg",
+                    dosage: "Lisinopril: Once daily with food\nMetformin: Twice daily with meals",
+                    notes: "Monitor blood pressure and blood sugar levels daily"
+                }
+            },
+            {
+                id: 2,
+                date: "2025-05-22",
+                appointmentId: 132,
+                patientId: 26,
+                patientName: "Bob Smith",
+                prescription: {
+                    medicines: "Albuterol Inhaler 90mcg",
+                    dosage: "Use as needed for shortness of breath, maximum 4 times daily",
+                    notes: "Carry inhaler at all times. Patient education provided."
+                }
+            },
+            {
+                id: 3,
+                date: "2025-05-22",
+                appointmentId: 133,
+                patientId: 26,
+                patientName: "Carol Williams",
+                prescription: {
+                    medicines: "Vitamin C tablets",
+                    dosage: "Twice a day",
+                    notes: "N/A"
+                }
+            },
+            {
+                id: 4,
+                date: "2025-05-21",
+                appointmentId: 134,
+                patientId: 27,
+                patientName: "David Brown",
+                prescription: {
+                    medicines: "Hydrocortisone Cream 1%",
+                    dosage: "Apply thin layer to affected areas twice daily",
+                    notes: "Avoid contact with eyes. Follow-up in 2 weeks."
+                }
+            }
+        ];
+
+        function renderRecords(records) {
+            const recordsBody = document.getElementById('recordsBody');
+            recordsBody.innerHTML = '';
+
+            records.forEach((record, index) => {
+                const recordRow = document.createElement('div');
+                recordRow.className = 'table-row slide-up';
+                recordRow.style.animationDelay = `${index * 0.1}s`;
+                
+                recordRow.innerHTML = `
+                    <div>${formatDate(record.date)}</div>
+                    <div>${record.appointmentId}</div>
+                    <div>${record.patientId}</div>
+                    <div>${record.patientName}</div>
+                    <div>
+                        <button class="prescription-btn" onclick="viewPrescription(${record.id})">
+                            📋 View
+                        </button>
+                    </div>
+                    <div>
+                        <button class="action-btn edit" onclick="editRecord(${record.id})">Edit</button>
+                        <button class="action-btn delete" onclick="deleteRecord(${record.id})">Delete</button>
+                    </div>
+                `;
+                
+                recordsBody.appendChild(recordRow);
+            });
+        }
+
+        function viewPrescription(recordId) {
+            const record = patientRecords.find(r => r.id === recordId);
+            if (!record) return;
+
+            document.getElementById('modalPatientName').value = record.patientName;
+            document.getElementById('modalMedicineNames').value = record.prescription.medicines;
+            document.getElementById('modalDosageInstructions').value = record.prescription.dosage;
+            document.getElementById('modalNotes').value = record.prescription.notes;
+            
+            document.getElementById('prescriptionModal').style.display = 'flex';
+        }
+
+        function closePrescriptionModal() {
+            document.getElementById('prescriptionModal').style.display = 'none';
+        }
+
+        function editRecord(recordId) {
+            showNotification(`Edit functionality for record ${recordId} would be implemented here`, 'info');
+            // In a real application, redirect to edit form
+            // window.location.href = `/doctor/edit-record/${recordId}`;
+        }
+
+        function deleteRecord(recordId) {
+            if (confirm('Are you sure you want to delete this record?')) {
+                showNotification(`Record ${recordId} deleted successfully`, 'success');
+                // In a real application, make API call to delete record
+                const recordIndex = patientRecords.findIndex(r => r.id === recordId);
+                if (recordIndex > -1) {
+                    patientRecords.splice(recordIndex, 1);
+                    renderRecords(patientRecords);
+                }
+            }
+        }
+
+        function filterRecords() {
+            const searchTerm = document.getElementById('recordSearch').value.toLowerCase();
+            const dateFilter = document.getElementById('dateFilter').value;
+
+            let filteredRecords = patientRecords.filter(record => {
+                const matchesSearch = record.patientName.toLowerCase().includes(searchTerm) ||
+                                    record.appointmentId.toString().includes(searchTerm) ||
+                                    record.patientId.toString().includes(searchTerm);
+
+                let matchesDate = true;
+                if (dateFilter) {
+                    const recordDate = new Date(record.date);
+                    const today = new Date();
+                    
+                    switch(dateFilter) {
+                        case 'today':
+                            matchesDate = recordDate.toDateString() === today.toDateString();
+                            break;
+                        case 'week':
+                            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                            matchesDate = recordDate >= weekAgo;
+                            break;
+                        case 'month':
+                            const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+                            matchesDate = recordDate >= monthAgo;
+                            break;
+                    }
+                }
+
+                return matchesSearch && matchesDate;
+            });
+
+            renderRecords(filteredRecords);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#2ECC71' : type === 'info' ? '#3498DB' : '#E74C3C'};
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                z-index: 10000;
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Event listeners
+        document.getElementById('recordSearch').addEventListener('input', filterRecords);
+        document.getElementById('dateFilter').addEventListener('change', filterRecords);
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('prescriptionModal');
+            if (event.target === modal) {
+                closePrescriptionModal();
+            }
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            renderRecords(patientRecords);
+        });
+    </script>
+
+    <style>
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--white);
+            padding: 3rem;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: var(--primary-teal);
+        }
+
+        .prescription-btn {
+            background: var(--primary-teal);
+            color: var(--white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .prescription-btn:hover {
+            background: var(--secondary-teal);
+            transform: translateY(-2px);
+        }
+
+        .action-btn {
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin: 0 0.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn.edit {
+            background: var(--warning-orange);
+            color: white;
+        }
+
+        .action-btn.delete {
+            background: var(--error-red);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.8;
+        }
+
+        .table-row {
+            grid-template-columns: 120px 120px 100px 150px 120px 150px;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .table-row {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 2rem;
+            }
+        }
+    </style>
+</body>
+</html>

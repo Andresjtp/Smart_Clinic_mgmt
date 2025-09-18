@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Clinic Management System - Select Role</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">Hospital CMS</a>
+            <nav class="nav-menu">
+                <a href="/login" class="nav-link">Login</a>
+                <a href="/signup" class="nav-link">Sign Up</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="role-selection fade-in">
+            <h1 class="role-title">Select Your <span class="highlight">Role</span></h1>
+            
+            <div class="role-buttons">
+                <button class="role-btn" onclick="selectRole('admin')" data-role="admin">
+                    Admin
+                </button>
+                <button class="role-btn" onclick="selectRole('patient')" data-role="patient">
+                    Patient
+                </button>
+                <button class="role-btn" onclick="selectRole('doctor')" data-role="doctor">
+                    Doctor
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Company</h3>
+                <ul>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Support</h3>
+                <ul>
+                    <li><a href="#account">Account</a></li>
+                    <li><a href="#help">Help Center</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#terms">Terms & Conditions</a></li>
+                    <li><a href="#privacy">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <script>
+        function selectRole(role) {
+            localStorage.setItem('selectedRole', role);
+            
+            // Add visual feedback
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`[data-role="${role}"]`).classList.add('selected');
+            
+            // Redirect based on role
+            setTimeout(() => {
+                switch(role) {
+                    case 'admin':
+                        window.location.href = '/admin/dashboard';
+                        break;
+                    case 'doctor':
+                        window.location.href = '/login?role=doctor';
+                        break;
+                    case 'patient':
+                        window.location.href = '/patient/doctors';
+                        break;
+                    default:
+                        window.location.href = '/login';
+                }
+            }, 500);
+        }
+
+        // Add loading animation
+        document.addEventListener('DOMContentLoaded', () => {
+            const roleButtons = document.querySelectorAll('.role-btn');
+            roleButtons.forEach((btn, index) => {
+                btn.style.animationDelay = `${index * 0.2}s`;
+                btn.classList.add('slide-up');
+            });
+        });
+    </script>
+</body>
+</html>

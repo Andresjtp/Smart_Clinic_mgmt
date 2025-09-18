@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Doctors - Smart Clinic</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">Hospital CMS</a>
+            <nav class="nav-menu">
+                <a href="/patient/home" class="nav-link">Home</a>
+                <a href="/patient/appointments" class="nav-link">Appointments</a>
+                <a href="/logout" class="nav-link">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="search-filter fade-in">
+            <input type="text" class="form-input search-input" placeholder="Search Bar for custom output" id="doctorSearch">
+            <select class="form-select filter-select" id="specialtyFilter">
+                <option value="">Filter by Specialty</option>
+                <option value="cardiology">Cardiology</option>
+                <option value="pediatrics">Pediatrics</option>
+                <option value="orthopedics">Orthopedics</option>
+                <option value="dermatology">Dermatology</option>
+                <option value="neurology">Neurology</option>
+            </select>
+            <select class="form-select filter-select" id="timeFilter">
+                <option value="">Any Time</option>
+                <option value="am">AM</option>
+                <option value="pm">PM</option>
+            </select>
+        </div>
+
+        <div class="doctors-grid" id="doctorsGrid">
+            <!-- Doctor cards will be populated here -->
+        </div>
+
+        <div id="loadingSpinner" class="loading-spinner" style="display: none;"></div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Company</h3>
+                <ul>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Support</h3>
+                <ul>
+                    <li><a href="#account">Account</a></li>
+                    <li><a href="#help">Help Center</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#terms">Terms & Conditions</a></li>
+                    <li><a href="#privacy">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <script>
+        // Sample doctor data (will be replaced with API calls)
+        const doctorsData = [
+            {
+                id: 1,
+                name: "Dr. Emily Adams",
+                specialty: "Cardiology",
+                email: "dr.adams@example.com",
+                availability: "09:00-10:00, 10:00-11:00, 11:00-12:00, 14:00-15:00",
+                consultationFee: 250.00
+            },
+            {
+                id: 2,
+                name: "Dr. Mark Johnson",
+                specialty: "Neurology", 
+                email: "dr.johnson@example.com",
+                availability: "10:00-11:00, 11:00-12:00, 14:00-15:00, 15:00-16:00",
+                consultationFee: 300.00
+            },
+            {
+                id: 3,
+                name: "Dr. Sarah Lee",
+                specialty: "Orthopedics",
+                email: "dr.lee@example.com", 
+                availability: "09:00-10:00, 11:00-12:00, 14:00-15:00, 16:00-17:00",
+                consultationFee: 280.00
+            },
+            {
+                id: 4,
+                name: "Dr. Tom Wilson",
+                specialty: "Pediatrics",
+                email: "dr.wilson@example.com",
+                availability: "09:00-10:00, 10:00-11:00, 15:00-16:00, 16:00-17:00", 
+                consultationFee: 200.00
+            },
+            {
+                id: 5,
+                name: "Dr. Alice Brown",
+                specialty: "Dermatology",
+                email: "dr.brown@example.com",
+                availability: "09:00-10:00, 10:00-11:00, 14:00-15:00, 15:00-16:00",
+                consultationFee: 180.00
+            },
+            {
+                id: 6,
+                name: "Dr. Taylor Grant",
+                specialty: "Cardiology",
+                email: "dr.taylor@example.com",
+                availability: "09:00-10:00, 10:00-11:00, 11:00-12:00, 14:00-15:00",
+                consultationFee: 275.00
+            }
+        ];
+
+        // Load doctors from API
+        let allDoctors = [];
+        
+        async function loadDoctors() {
+            try {
+                const response = await ApiClient.get('/doctors');
+                
+                if (response.success) {
+                    allDoctors = response.data.map(doctor => ({
+                        id: doctor.id,
+                        name: doctor.name,
+                        specialty: doctor.specialization,
+                        email: doctor.email,
+                        availability: "09:00-10:00, 10:00-11:00, 14:00-15:00, 15:00-16:00",
+                        consultationFee: doctor.consultationFee || 150.00
+                    }));
+                    renderDoctors(allDoctors);
+                } else {
+                    throw new Error(response.message || 'Failed to load doctors');
+                }
+            } catch (error) {
+                console.error('Error loading doctors:', error);
+                UIUtils.showNotification('Error loading doctors: ' + error.message, 'error');
+                // Fallback to sample data if API fails
+                allDoctors = doctorsData;
+                renderDoctors(allDoctors);
+            }
+        }
+
+        function renderDoctors(doctors) {
+            const grid = document.getElementById('doctorsGrid');
+            grid.innerHTML = '';
+
+            doctors.forEach((doctor, index) => {
+                const doctorCard = document.createElement('div');
+                doctorCard.className = 'doctor-card slide-up';
+                doctorCard.style.animationDelay = `${index * 0.1}s`;
+                
+                doctorCard.innerHTML = `
+                    <h3 class="doctor-name">${doctor.name}</h3>
+                    <p class="doctor-specialty">Specialization: ${doctor.specialty}</p>
+                    <div class="doctor-info">
+                        <p><strong>Email:</strong> ${doctor.email}</p>
+                        <p><strong>Available:</strong> ${doctor.availability}</p>
+                        <p><strong>Fee:</strong> $${doctor.consultationFee.toFixed(2)}</p>
+                    </div>
+                    <button class="book-btn" onclick="bookAppointment(${doctor.id})">
+                        Book Now
+                    </button>
+                `;
+                
+                grid.appendChild(doctorCard);
+            });
+        }
+
+        function bookAppointment(doctorId) {
+            localStorage.setItem('selectedDoctorId', doctorId);
+            window.location.href = `/patient/book-appointment?doctorId=${doctorId}`;
+        }
+
+        function filterDoctors() {
+            const searchTerm = document.getElementById('doctorSearch').value.toLowerCase();
+            const selectedSpecialty = document.getElementById('specialtyFilter').value;
+            const selectedTime = document.getElementById('timeFilter').value;
+
+            let filtered = allDoctors.filter(doctor => {
+                const matchesSearch = doctor.name.toLowerCase().includes(searchTerm) ||
+                                    doctor.specialty.toLowerCase().includes(searchTerm);
+                const matchesSpecialty = !specialtyFilter || doctor.specialty.toLowerCase().includes(specialtyFilter);
+                const matchesTime = !timeFilter || 
+                                  (timeFilter === 'am' && doctor.availability.includes('09:00')) ||
+                                  (timeFilter === 'pm' && doctor.availability.includes('14:00'));
+
+                return matchesSearch && matchesSpecialty && matchesTime;
+            });
+
+            renderDoctors(filteredDoctors);
+        }
+
+        // Event listeners
+        document.getElementById('doctorSearch').addEventListener('input', filterDoctors);
+        document.getElementById('specialtyFilter').addEventListener('change', filterDoctors);
+        document.getElementById('timeFilter').addEventListener('change', filterDoctors);
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDoctors();
+        });
+    </script>
+</body>
+</html>
