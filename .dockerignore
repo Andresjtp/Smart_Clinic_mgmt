@@ -1,0 +1,63 @@
+# Docker ignore file for Smart Clinic Management System
+
+# Maven
+target/
+!target/*.jar
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+
+# Git
+.git
+.gitignore
+README.md
+docs/
+
+# Node modules (if any frontend build tools are used)
+node_modules/
+npm-debug.log*
+
+# Application specific
+application-local.properties
+application-dev.properties
+*.pid
+
+# Test files (don't include in production image)
+src/test/
+
+# Docker files themselves
+Dockerfile*
+docker-compose*.yml
+.dockerignore
