@@ -229,4 +229,34 @@ BEGIN
     ORDER BY count DESC;
 END//
 
+-- 9. Get Daily Appointment Report By Doctor
+-- Returns daily appointment report for a specific doctor by date
+DROP PROCEDURE IF EXISTS GetDailyAppointmentReportByDoctor//
+CREATE PROCEDURE GetDailyAppointmentReportByDoctor(IN doctorId BIGINT, IN reportDate DATE)
+BEGIN
+    SELECT 
+        CONCAT(du.first_name, ' ', du.last_name) as doctor_name,
+        d.specialization,
+        reportDate as report_date,
+        COUNT(*) as total_appointments,
+        COUNT(CASE WHEN a.status = 'COMPLETED' THEN 1 END) as completed_appointments,
+        COUNT(CASE WHEN a.status = 'CANCELLED' THEN 1 END) as cancelled_appointments,
+        COUNT(CASE WHEN a.status = 'NO_SHOW' THEN 1 END) as no_show_appointments,
+        COUNT(CASE WHEN a.status = 'SCHEDULED' THEN 1 END) as scheduled_appointments,
+        SUM(a.duration_minutes) as total_duration_minutes,
+        AVG(a.duration_minutes) as average_duration_minutes,
+        SUM(CASE WHEN a.is_paid = true THEN a.fee ELSE 0 END) as total_revenue,
+        SUM(CASE WHEN a.is_paid = false THEN a.fee ELSE 0 END) as pending_revenue,
+        COUNT(DISTINCT a.patient_id) as unique_patients,
+        MIN(TIME(a.appointment_datetime)) as first_appointment_time,
+        MAX(TIME(a.appointment_datetime)) as last_appointment_time
+    FROM appointments a
+    JOIN doctors d ON a.doctor_id = d.id
+    JOIN users du ON d.user_id = du.id
+    WHERE a.doctor_id = doctorId 
+      AND DATE(a.appointment_datetime) = reportDate
+    GROUP BY du.first_name, du.last_name, d.specialization
+    HAVING COUNT(*) > 0;
+END//
+
 DELIMITER ;
